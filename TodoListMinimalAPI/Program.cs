@@ -29,8 +29,7 @@ app.MapGet("/getbystatus/{status}", (bool status, AppDbContext context) => //nom
     var selectTodo = (from s in context.Todos
                       where s.Done == status
                       select s);
-
-    
+        
     if(selectTodo is null) return Results.NotFound();
     return Results.Ok(selectTodo);
     
