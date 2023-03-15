@@ -361,3 +361,7 @@ MigrationBackup/
 
 # Fody - auto-generated XML schema
 FodyWeavers.xsd
+/TodoListMinimalAPI/TodoListMinimalAPI.csproj
+/TodoListMinimalAPI/app.db
+/TodoListMinimalAPI/app.db-shm
+/TodoListMinimalAPI/app.db-wal
