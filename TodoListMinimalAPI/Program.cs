@@ -1,18 +1,16 @@
 using Microsoft.EntityFrameworkCore;
 using System.Text.Json.Serialization;
 using TodoListMinimalAPI.Data;
+using System.Linq;
 
 
 var builder = WebApplication.CreateBuilder(args);
 
 
-builder.Services.AddDbContext<AppDbContext>(); //gerencia todfa a conexão com o banco, sempre que tive rum db context usa um addDbContext
+builder.Services.AddDbContext<AppDbContext>(); //gerencia toda a conexão com o banco, sempre que tive rum db context usa um addDbContext
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
-builder.Services.AddControllersWithViews()
-    .AddJsonOptions(options =>
-    options.JsonSerializerOptions.ReferenceHandler = ReferenceHandler.IgnoreCycles
-);
+
 var app = builder.Build();
 
 app.UseSwagger();
@@ -25,14 +23,17 @@ app.MapGet("/all", (AppDbContext context) =>
     return Results.Ok(todos);
 });
 
-app.MapGet("/getbystatus/{status}", (bool status, AppDbContext context) =>
+app.MapGet("/getbystatus/{status}", (bool status, AppDbContext context) => //nomear melhor rotas
 {
-    var selectTodo = context.Todos.Find(status);
-    if(selectTodo is not null)
-    {
-        return Results.Ok(selectTodo);
-    }
-    return Results.NotFound();
+    //var selectTodo = context.Todos.Find(status); // porque não funciona?
+    var selectTodo = (from s in context.Todos
+                      where s.Done == status
+                      select s);
+
+    
+    if(selectTodo is null) return Results.NotFound();
+    return Results.Ok(selectTodo);
+    
 });
 
 app.MapPost("/post", (AppDbContext context, Todo todo) => 
@@ -46,26 +47,25 @@ app.MapPut("/put/{id}", (AppDbContext context, Todo todo, int id) =>
 {
     var update = context.Todos.Find(id);
     
-    if(update is not null){
-        update.Title = todo.Title;
-        update.Done = todo.Done;
-        context.SaveChanges();
-        return Results.Ok(todo);
-    }
-        return Results.NotFound();
+    if(update is null) return Results.NotFound();
+    
+    update.Title = todo.Title;
+    update.Done = todo.Done;
+    context.SaveChanges();
+    return Results.Ok(todo);
+    
+        
 });
 
 app.MapDelete("/del/{id}",(int id, AppDbContext context) =>
 {
     var deleteTodo = context.Todos.Find(id);
 
-    if (deleteTodo is not null)
-    {
-        var removed = context.Todos.Remove(deleteTodo);
-        context.SaveChanges();
-        return Results.Ok();
-    }
-    return Results.BadRequest();
+    if (deleteTodo is null) return Results.NotFound();
+    
+    var removed = context.Todos.Remove(deleteTodo);
+    context.SaveChanges();
+    return Results.Ok();  
     
 });
 
