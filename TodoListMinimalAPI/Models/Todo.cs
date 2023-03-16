@@ -2,8 +2,13 @@
 {
     public record Todo
     {
-        public int Id { get; set; } = 0;
+        public Guid Id { get; set; } 
         public string Title { get; set; } = String.Empty;
         public bool Done { get; set; }
+
+        public Todo()
+        {
+            Id = Guid.NewGuid();
+        }
     }
 }

@@ -28,26 +28,28 @@ namespace TodoListMinimalAPI.Endpoints
 
             app.MapPost("/post", (AppDbContext context, Todo todo) =>
             {
+                todo.Id = Guid.NewGuid();
                 context.Todos.Add(todo);
                 context.SaveChanges();
                 return Results.Created($"/post/{todo.Id}", todo);
             });
 
-            app.MapPut("/put/{id}", (AppDbContext context, Todo todo, int id) =>
+            app.MapPut("/put/{id}", (AppDbContext context, Todo todo, Guid id) =>
             {
                 var update = context.Todos.Find(id);
 
                 if (update is null) return Results.NotFound();
 
+                update.Id = id;
                 update.Title = todo.Title;
                 update.Done = todo.Done;
                 context.SaveChanges();
-                return Results.Ok(todo);
+                return Results.Ok(update);
 
 
             });
 
-            app.MapDelete("/del/{id}", (int id, AppDbContext context) =>
+            app.MapDelete("/del/{id}", (Guid id, AppDbContext context) =>
             {
                 var deleteTodo = context.Todos.Find(id);
 
