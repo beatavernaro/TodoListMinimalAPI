@@ -1,4 +1,5 @@
-﻿using TodoListMinimalAPI.Data;
+﻿using TodoListMinimalAPI.Contracts.Response;
+using TodoListMinimalAPI.Data;
 
 namespace TodoListMinimalAPI.Endpoints
 {
@@ -34,13 +35,12 @@ namespace TodoListMinimalAPI.Endpoints
                 return Results.Created($"/post/{todo.Id}", todo);
             });
 
-            app.MapPut("/put/{id}", (AppDbContext context, Todo todo, Guid id) =>
+            app.MapPut("/put/{id}", (AppDbContext context, TodoPutModel todo, Guid id) =>
             {
                 var update = context.Todos.Find(id);
 
                 if (update is null) return Results.NotFound();
 
-                update.Id = id;
                 update.Title = todo.Title;
                 update.Done = todo.Done;
                 context.SaveChanges();
