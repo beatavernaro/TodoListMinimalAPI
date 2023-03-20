@@ -6,7 +6,6 @@ namespace TodoListMinimalAPI.Data
     public record Todo
     {
         public Guid Id { get; set; }
-        [Required]
         public string Title { get; set; } = String.Empty;
         public bool Done { get; set; }
 

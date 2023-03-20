@@ -1,4 +1,7 @@
-﻿using TodoListMinimalAPI.Data;
+﻿using AutoMapper;
+using TodoListMinimalAPI.Contracts.Response;
+using TodoListMinimalAPI.Data;
+
 
 namespace TodoListMinimalAPI.Endpoints
 {
@@ -6,8 +9,7 @@ namespace TodoListMinimalAPI.Endpoints
     {
         public static void AddEndpoint(WebApplication app)
         {
-            //app.MapGet("/", () => "Hello World!"); //rota e função que vai ser chamada
-
+            #region GET
             app.MapGet("/all", (AppDbContext context) =>
             {
                 var todos = context.Todos.ToList();
@@ -25,30 +27,37 @@ namespace TodoListMinimalAPI.Endpoints
                 return Results.Ok(selectTodo);
 
             });
+            #endregion
 
-            app.MapPost("/post", (AppDbContext context, Todo todo) =>
+            #region POST
+            app.MapPost("/post", (AppDbContext context, TodoPostModel todoModel) =>
             {
-                todo.Id = Guid.NewGuid();
-                context.Todos.Add(todo);
+                var response = TodoPostModel.Converte(todoModel);
+                context.Todos.Add(response);
+                //todo.Id = Guid.NewGuid();
+                //context.Todos.Add(todo);
                 context.SaveChanges();
-                return Results.Created($"/post/{todo.Id}", todo);
-            });
 
-            app.MapPut("/put/{id}", (AppDbContext context, Todo todo, Guid id) =>
+                return Results.Created($"/{response.Id}", todoModel);
+            });
+            #endregion
+
+            #region PUT
+            app.MapPut("/put/{id}", (AppDbContext context, TodoPutModel todo, Guid id) =>
             {
                 var update = context.Todos.Find(id);
 
                 if (update is null) return Results.NotFound();
 
-                update.Id = id;
                 update.Title = todo.Title;
                 update.Done = todo.Done;
                 context.SaveChanges();
                 return Results.Ok(update);
 
-
             });
+            #endregion
 
+            #region DELETE
             app.MapDelete("/del/{id}", (Guid id, AppDbContext context) =>
             {
                 var deleteTodo = context.Todos.Find(id);
@@ -60,6 +69,17 @@ namespace TodoListMinimalAPI.Endpoints
                 return Results.Ok();
 
             });
+            #endregion
         }
+
+        /*public static IMapper AutoM()
+        {
+            var configAutomapper = new MapperConfiguration(cfg =>
+            {
+                cfg.CreateMap<Todo, TodoPostModel>();
+            });
+            IMapper mapper = configAutomapper.CreateMapper();
+            return mapper;
+        }*/
     }
 }
