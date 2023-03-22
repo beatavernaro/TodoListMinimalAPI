@@ -1,7 +1,7 @@
 ﻿using AutoMapper;
 using TodoListMinimalAPI.Contracts.Response;
 using TodoListMinimalAPI.Data;
-
+using TodoListMinimalAPI.Helpers;
 
 namespace TodoListMinimalAPI.Endpoints
 {
@@ -32,9 +32,10 @@ namespace TodoListMinimalAPI.Endpoints
             #region POST
             app.MapPost("/post", (AppDbContext context, TodoPostModel todoModel) =>
             {
-                var response = TodoPostModel.Converte(todoModel);
+                //TODO - fazer validação da entidade com fluent validation
+                var response = todoModel.ConvertToTodo(); // TodoPostModel.Converte(todoModel);
                 context.Todos.Add(response);
-                //todo.Id = Guid.NewGuid();
+                // todo.Id = Guid.NewGuid();
                 //context.Todos.Add(todo);
                 context.SaveChanges();
 
@@ -45,6 +46,7 @@ namespace TodoListMinimalAPI.Endpoints
             #region PUT
             app.MapPut("/put/{id}", (AppDbContext context, TodoPutModel todo, Guid id) =>
             {
+                //TODO - fazer validação da entidade com fluent validation
                 var update = context.Todos.Find(id);
 
                 if (update is null) return Results.NotFound();
