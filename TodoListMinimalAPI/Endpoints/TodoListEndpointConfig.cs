@@ -72,14 +72,5 @@ namespace TodoListMinimalAPI.Endpoints
             #endregion
         }
 
-        /*public static IMapper AutoM()
-        {
-            var configAutomapper = new MapperConfiguration(cfg =>
-            {
-                cfg.CreateMap<Todo, TodoPostModel>();
-            });
-            IMapper mapper = configAutomapper.CreateMapper();
-            return mapper;
-        }*/
     }
 }
