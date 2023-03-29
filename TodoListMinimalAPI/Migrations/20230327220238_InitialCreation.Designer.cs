@@ -11,7 +11,7 @@ using TodoListMinimalAPI.Data;
 namespace TodoListMinimalAPI.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    [Migration("20230313193403_InitialCreation")]
+    [Migration("20230327220238_InitialCreation")]
     partial class InitialCreation
     {
         /// <inheritdoc />
@@ -20,14 +20,28 @@ namespace TodoListMinimalAPI.Migrations
 #pragma warning disable 612, 618
             modelBuilder.HasAnnotation("ProductVersion", "7.0.3");
 
-            modelBuilder.Entity("Todo", b =>
+            modelBuilder.Entity("TodoListMinimalAPI.Data.Todo", b =>
                 {
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("TEXT");
 
+                    b.Property<string>("Description")
+                        .IsRequired()
+                        .HasColumnType("TEXT");
+
                     b.Property<bool>("Done")
                         .HasColumnType("INTEGER");
+
+                    b.Property<DateOnly>("DueDate")
+                        .HasColumnType("TEXT");
+
+                    b.Property<double>("Grade")
+                        .HasColumnType("REAL");
+
+                    b.Property<string>("Subject")
+                        .IsRequired()
+                        .HasColumnType("TEXT");
 
                     b.Property<string>("Title")
                         .IsRequired()
@@ -35,7 +49,7 @@ namespace TodoListMinimalAPI.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("Todos");
+                    b.ToTable("TodoTasks");
                 });
 #pragma warning restore 612, 618
         }

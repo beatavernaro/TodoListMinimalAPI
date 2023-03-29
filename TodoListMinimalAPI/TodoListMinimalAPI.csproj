@@ -18,6 +18,7 @@
 
   <ItemGroup>
     <Folder Include="Contracts\Request\" />
+    <Folder Include="Migrations\" />
   </ItemGroup>
 
 </Project>

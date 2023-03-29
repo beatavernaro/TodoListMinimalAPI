@@ -1,10 +1,5 @@
-using Microsoft.EntityFrameworkCore;
-using System.Text.Json.Serialization;
 using TodoListMinimalAPI.Data;
-using System.Linq;
 using TodoListMinimalAPI.Endpoints;
-using TodoListMinimalAPI.Contracts.Response;
-using AutoMapper;
 
 var builder = WebApplication.CreateBuilder(args);
 

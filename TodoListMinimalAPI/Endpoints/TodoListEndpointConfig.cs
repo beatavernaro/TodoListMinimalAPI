@@ -1,5 +1,4 @@
-﻿using AutoMapper;
-using TodoListMinimalAPI.Contracts.Response;
+﻿using TodoListMinimalAPI.Contracts.Response;
 using TodoListMinimalAPI.Data;
 using TodoListMinimalAPI.Helpers;
 
@@ -10,66 +9,83 @@ namespace TodoListMinimalAPI.Endpoints
         public static void AddEndpoint(WebApplication app)
         {
             #region GET
-            app.MapGet("/all", (AppDbContext context) =>
+            app.MapGet("/api/tasks", (AppDbContext context) =>
             {
-                var todos = context.Todos.ToList();
-                return Results.Ok(todos);
+                var orderTasks = (from task in context.TodoTasks
+                                  orderby task.DueDate
+                                  select task).ToList();
+
+                if (orderTasks.Count == 0) return Results.NotFound("No tasks found");
+
+                return Results.Ok(orderTasks);
             });
 
-            app.MapGet("/getbystatus/{status}", (bool status, AppDbContext context) => //nomear melhor rotas
+            app.MapGet("/api/tasks/{status}", (bool status, AppDbContext context) =>
             {
-                //var selectTodo = context.Todos.Find(status); // porque não funciona?
-                var selectTodo = (from s in context.Todos
-                                  where s.Done == status
-                                  select s);
+                var selectByStatus = (from task in context.TodoTasks
+                                      where task.Done == status
+                                      select task).ToList();
 
-                if (selectTodo is null) return Results.NotFound();
-                return Results.Ok(selectTodo);
+                if (selectByStatus.Count == 0) return Results.NotFound($"No results with the status {status}");
 
+                return Results.Ok(selectByStatus);
             });
+
+            app.MapGet("/api/tasks/overdueTasks", (AppDbContext context) =>
+             {
+                 DateOnly today = DateOnly.FromDateTime(DateTime.Now);
+                 var selectOverdueTasks = (from tasks in context.TodoTasks
+                                   where tasks.DueDate < today
+                                   select tasks).ToList();
+
+                 if (selectOverdueTasks.Count == 0) return Results.Ok("There is no overdue task for today");
+
+                 return Results.Ok(selectOverdueTasks);
+             });
+
             #endregion
 
             #region POST
-            app.MapPost("/post", (AppDbContext context, TodoPostModel todoModel) =>
+            app.MapPost("/api", (AppDbContext context, TodoPostModel todoPostModel) =>
             {
+
                 //TODO - fazer validação da entidade com fluent validation
-                var response = todoModel.ConvertToTodo(); // TodoPostModel.Converte(todoModel);
-                context.Todos.Add(response);
-                // todo.Id = Guid.NewGuid();
-                //context.Todos.Add(todo);
+                var response = todoPostModel.ConvertToTodo();
+                context.TodoTasks.Add(response);
                 context.SaveChanges();
 
-                return Results.Created($"/{response.Id}", todoModel);
+                return Results.Created($"/{response.Id}", todoPostModel);
             });
             #endregion
 
             #region PUT
-            app.MapPut("/put/{id}", (AppDbContext context, TodoPutModel todo, Guid id) =>
+            app.MapPut("/api/{id}", (AppDbContext context, TodoPutModel todo, Guid id) =>
             {
                 //TODO - fazer validação da entidade com fluent validation
-                var update = context.Todos.Find(id);
+                var taskToUpdate = context.TodoTasks.Find(id);
 
-                if (update is null) return Results.NotFound();
-
-                update.Title = todo.Title;
-                update.Done = todo.Done;
+                if (taskToUpdate is null) return Results.NotFound("No matches found with the given ID");
+                
+                taskToUpdate.Done = todo.Done;
+                taskToUpdate.Grade = todo.Grade;
                 context.SaveChanges();
-                return Results.Ok(update);
+
+                return Results.Ok(taskToUpdate);
 
             });
             #endregion
 
             #region DELETE
-            app.MapDelete("/del/{id}", (Guid id, AppDbContext context) =>
+            app.MapDelete("/api/{id}", (Guid id, AppDbContext context) =>
             {
-                var deleteTodo = context.Todos.Find(id);
+                var deleteTask = context.TodoTasks.Find(id);
 
-                if (deleteTodo is null) return Results.NotFound();
+                if (deleteTask is null) return Results.NotFound();
 
-                var removed = context.Todos.Remove(deleteTodo);
+                var removed = context.TodoTasks.Remove(deleteTask);
                 context.SaveChanges();
-                return Results.Ok();
 
+                return Results.Ok("Deleted!");
             });
             #endregion
         }
