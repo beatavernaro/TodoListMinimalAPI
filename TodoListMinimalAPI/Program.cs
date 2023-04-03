@@ -13,7 +13,7 @@ var app = builder.Build();
 app.UseSwagger();
 app.UseSwaggerUI();
 
-TodoListEndpointConfig.AddEndpoint(app);
+TaskListEndpointConfig.AddEndpoint(app);
 
 
 app.Run();

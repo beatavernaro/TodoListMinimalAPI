@@ -1,6 +1,6 @@
 ﻿namespace TodoListMinimalAPI.Data
 {
-    public record Todo
+    public record TaskModel
     {
         public Guid Id { get; set; }
         public string Title { get; set; } = String.Empty;
@@ -11,7 +11,7 @@
         public DateOnly DueDate { get; set; }
 //TODO - Altualizar model
 
-        public Todo()
+        public TaskModel()
         {
             Id = Guid.NewGuid();
         }

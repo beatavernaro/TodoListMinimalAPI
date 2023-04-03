@@ -1,11 +1,15 @@
-﻿using TodoListMinimalAPI.Contracts.Response;
+﻿using FluentValidation;
+using System.ComponentModel.DataAnnotations;
+using TodoListMinimalAPI.Contracts.Response;
 using TodoListMinimalAPI.Data;
 using TodoListMinimalAPI.Helpers;
+using TodoListMinimalAPI.Validators;
 
 namespace TodoListMinimalAPI.Endpoints
 {
-    public class TodoListEndpointConfig
+    public class TaskListEndpointConfig
     {
+        TaskValidator validator = new TaskValidator();
         public static void AddEndpoint(WebApplication app)
         {
             #region GET
@@ -46,28 +50,36 @@ namespace TodoListMinimalAPI.Endpoints
             #endregion
 
             #region POST
-            app.MapPost("/api", (AppDbContext context, TodoPostModel todoPostModel) =>
+            app.MapPost("/api", (AppDbContext context, TaskPostModel taskPostModel) =>
             {
-
                 //TODO - fazer validação da entidade com fluent validation
-                var response = todoPostModel.ConvertToTodo();
+                var response = taskPostModel.ConvertToTask();
+
+                var validationResults = TaskValidator.Valid(response);
+                if (validationResults.Count() != 0)
+                    return Results.BadRequest($"{validationResults[0]}");
+
                 context.TodoTasks.Add(response);
                 context.SaveChanges();
-
-                return Results.Created($"/{response.Id}", todoPostModel);
+                return Results.Created($"/{response.Id}", taskPostModel);
             });
             #endregion
 
             #region PUT
-            app.MapPut("/api/{id}", (AppDbContext context, TodoPutModel todo, Guid id) =>
+            app.MapPut("/api/{id}", (AppDbContext context, TaskPutModel taskModel, Guid id) =>
             {
                 //TODO - fazer validação da entidade com fluent validation
                 var taskToUpdate = context.TodoTasks.Find(id);
 
                 if (taskToUpdate is null) return Results.NotFound("No matches found with the given ID");
                 
-                taskToUpdate.Done = todo.Done;
-                taskToUpdate.Grade = todo.Grade;
+                taskToUpdate.Done = taskModel.Done;
+                taskToUpdate.Grade = taskModel.Grade;
+
+                var validationResults = TaskValidator.Valid(taskToUpdate);
+                if (validationResults.Count() != 0)
+                    return Results.BadRequest($"{validationResults[0]}");
+
                 context.SaveChanges();
 
                 return Results.Ok(taskToUpdate);
