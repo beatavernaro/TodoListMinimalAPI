@@ -9,7 +9,6 @@ namespace TodoListMinimalAPI.Endpoints
 {
     public class TaskListEndpointConfig
     {
-        TaskValidator validator = new TaskValidator();
         public static void AddEndpoint(WebApplication app)
         {
             #region GET
@@ -76,7 +75,7 @@ namespace TodoListMinimalAPI.Endpoints
                 taskToUpdate.Done = taskModel.Done;
                 taskToUpdate.Grade = taskModel.Grade;
 
-                var validationResults = TaskValidator.Valid(taskToUpdate);
+                var validationResults = TaskValidator.Valid(taskToUpdate); //A data não valida aqui porque 
                 if (validationResults.Count() != 0)
                     return Results.BadRequest($"{validationResults[0]}");
 

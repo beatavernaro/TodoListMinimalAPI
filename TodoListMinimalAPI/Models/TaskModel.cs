@@ -9,7 +9,6 @@
         public string Description { get; set; } = String.Empty;
         public double Grade { get; set; }
         public DateOnly DueDate { get; set; }
-//TODO - Altualizar model
 
         public TaskModel()
         {
