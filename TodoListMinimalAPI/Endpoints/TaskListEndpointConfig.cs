@@ -1,5 +1,4 @@
 ﻿using FluentValidation;
-using System.ComponentModel.DataAnnotations;
 using TodoListMinimalAPI.Contracts.Response;
 using TodoListMinimalAPI.Data;
 using TodoListMinimalAPI.Helpers;
@@ -51,7 +50,6 @@ namespace TodoListMinimalAPI.Endpoints
             #region POST
             app.MapPost("/api", (AppDbContext context, TaskPostModel taskPostModel) =>
             {
-                //TODO - fazer validação da entidade com fluent validation
                 var response = taskPostModel.ConvertToTask();
 
                 var validationResults = TaskValidator.Valid(response);
@@ -75,7 +73,7 @@ namespace TodoListMinimalAPI.Endpoints
                 taskToUpdate.Done = taskModel.Done;
                 taskToUpdate.Grade = taskModel.Grade;
 
-                var validationResults = TaskValidator.Valid(taskToUpdate); //A data não valida aqui porque 
+                var validationResults = TaskValidator.Valid(taskToUpdate); //A data não valida aqui porque está 'atrasada' de acordo com a regra da validação. Devo criar uma nova classe para essa validação?  
                 if (validationResults.Count() != 0)
                     return Results.BadRequest($"{validationResults[0]}");
 

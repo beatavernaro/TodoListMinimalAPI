@@ -9,7 +9,7 @@ namespace TodoListMinimalAPI.Validators
         public TaskValidator()
         {
             RuleLevelCascadeMode = CascadeMode.Stop; //Está continuando mesmo depois da primeira falha.
-            RuleFor(t => t.Title).NotEmpty().Length(2,50).NotEqual("string");
+            RuleFor(t => t.Title).NotEmpty().Length(2, 50).NotEqual("string");
             RuleFor(t => t.Subject).NotEmpty().NotEqual("string");//.Must(ValidSubject);
             RuleFor(t => t.Description).NotEmpty().MaximumLength(140).NotEqual("string");
             RuleFor(t => t.DueDate).GreaterThanOrEqualTo(DateOnly.FromDateTime(DateTime.Now)).WithMessage("The due date must be grater than today"); //No metodo PUT a data não esta validando
@@ -33,15 +33,17 @@ namespace TodoListMinimalAPI.Validators
 
             var results = validator.Validate(response);
 
-            if(results.IsValid == false)
+            if (!results.IsValid)
             {
-                foreach(var failure in results.Errors)
+                foreach (var failure in results.Errors)
                 {
                     errorList.Add($"{failure.PropertyName}: {failure.ErrorMessage}");
                 }
             }
             return errorList;
-
+            //testar se a lista é vazia. testar se a lista tem itens
+            //testa se a validação retorna uma lista vazia de erros quando os dados são válidos.
+            // testa se a validação retorna uma lista contendo a quantidade de erro corretas quando os dados são inválidos.
         }
         //Estou retornando uma lista e tratando esse retorno no mapPost.
     }
