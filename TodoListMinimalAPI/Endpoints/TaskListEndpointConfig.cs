@@ -37,8 +37,8 @@ namespace TodoListMinimalAPI.Endpoints
              {
                  DateOnly today = DateOnly.FromDateTime(DateTime.Now);
                  var selectOverdueTasks = (from tasks in context.TodoTasks
-                                   where tasks.DueDate < today
-                                   select tasks).ToList();
+                                           where tasks.DueDate < today
+                                           select tasks).ToList();
 
                  if (selectOverdueTasks.Count == 0) return Results.Ok("There is no overdue task for today");
 
@@ -69,7 +69,7 @@ namespace TodoListMinimalAPI.Endpoints
                 var taskToUpdate = context.TodoTasks.Find(id);
 
                 if (taskToUpdate is null) return Results.NotFound("No matches found with the given ID");
-                
+
                 taskToUpdate.Done = taskModel.Done;
                 taskToUpdate.Grade = taskModel.Grade;
 
