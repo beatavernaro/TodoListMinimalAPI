@@ -8,14 +8,14 @@ namespace TodoListMinimalAPI.Validators
     {
         public TaskValidator()
         {
-            RuleLevelCascadeMode = CascadeMode.Stop; //Está continuando mesmo depois da primeira falha.
+            RuleLevelCascadeMode = CascadeMode.Stop;
             RuleFor(t => t.Title).NotEmpty().Length(2, 50).NotEqual("string");
             RuleFor(t => t.Subject).NotEmpty().NotEqual("string").Must(ValidSubject);
             RuleFor(t => t.Description).NotEmpty().MaximumLength(140).NotEqual("string");
             RuleFor(t => t.DueDate).GreaterThanOrEqualTo(DateOnly.FromDateTime(DateTime.Now)).WithMessage("The due date must be grater than today"); //No metodo PUT a data não esta validando
             RuleFor(t => t.Grade).InclusiveBetween(0, 10).WithMessage("The grade must be between 0 and 10");
         }
-
+        //automapper
         protected bool ValidSubject(string subject)
         {
             List<string> validSubjects = new()
@@ -32,7 +32,7 @@ namespace TodoListMinimalAPI.Validators
             TaskValidator validator = new();
 
             var results = validator.Validate(response);
-
+            //nbuilder
             if (!results.IsValid)
             {
                 foreach (var failure in results.Errors)

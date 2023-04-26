@@ -10,11 +10,12 @@ namespace TodoListMinimalAPI.Helpers
             TaskModel response = new TaskModel();
             response.Title = taskModel.Title;
             response.Done = taskModel.Done;
-            response.Subject = taskModel.Subject;
+            response.Subject = taskModel.Subject.ToLower();
             response.Description = taskModel.Description;
             response.Grade = taskModel.Grade;
             response.DueDate = taskModel.DueDate;
             response.Id = Guid.NewGuid();
+            //POSTMAN TESTE
 
             return response;
         }

@@ -1,4 +1,5 @@
-﻿using FluentValidation;
+﻿using AutoMapper;
+using FluentValidation;
 using TodoListMinimalAPI.Contracts.Response;
 using TodoListMinimalAPI.Data;
 using TodoListMinimalAPI.Helpers;
@@ -8,6 +9,12 @@ namespace TodoListMinimalAPI.Endpoints
 {
     public class TaskListEndpointConfig
     {
+        public readonly IMapper _mapper;
+        public TaskListEndpointConfig(IMapper mapper)
+        {
+            _mapper = mapper;
+        }
+
         public static void AddEndpoint(WebApplication app)
         {
             #region GET
@@ -33,9 +40,23 @@ namespace TodoListMinimalAPI.Endpoints
                 return Results.Ok(selectByStatus);
             });
 
+            /*
+            app.MapGet("/api/tasks/{subject}", (string subject, AppDbContext context) =>
+            {
+                var selectBySubject = (from task in context.TodoTasks
+                                      where task.Subject == subject
+                                      select task).ToList();
+
+                if (selectBySubject.Count == 0) return Results.NotFound($"No results for the {subject} subject");
+
+                return Results.Ok(selectBySubject);
+            });
+            */
+
             app.MapGet("/api/tasks/overdueTasks", (AppDbContext context) =>
              {
                  DateOnly today = DateOnly.FromDateTime(DateTime.Now);
+                 
                  var selectOverdueTasks = (from tasks in context.TodoTasks
                                            where tasks.DueDate < today
                                            select tasks).ToList();
@@ -50,8 +71,11 @@ namespace TodoListMinimalAPI.Endpoints
             #region POST
             app.MapPost("/api", (AppDbContext context, TaskPostModel taskPostModel) =>
             {
-                var response = taskPostModel.ConvertToTask();
+                //var response = taskPostModel.ConvertToTask();
+                var _mapper = new IMapper();
+                var response = _mapper.Map<TaskModel>(taskPostModel);
 
+                //mapear para <> de ()
                 var validationResults = TaskValidator.Valid(response);
                 if (validationResults.Count() != 0)
                     return Results.BadRequest($"{validationResults[0]}");
@@ -65,7 +89,6 @@ namespace TodoListMinimalAPI.Endpoints
             #region PUT
             app.MapPut("/api/{id}", (AppDbContext context, TaskPutModel taskModel, Guid id) =>
             {
-                //TODO - fazer validação da entidade com fluent validation
                 var taskToUpdate = context.TodoTasks.Find(id);
 
                 if (taskToUpdate is null) return Results.NotFound("No matches found with the given ID");
@@ -73,7 +96,7 @@ namespace TodoListMinimalAPI.Endpoints
                 taskToUpdate.Done = taskModel.Done;
                 taskToUpdate.Grade = taskModel.Grade;
 
-                var validationResults = TaskValidator.Valid(taskToUpdate); //A data não valida aqui porque está 'atrasada' de acordo com a regra da validação. Devo criar uma nova classe para essa validação?  
+                var validationResults = TaskValidator.Valid(taskToUpdate);  
                 if (validationResults.Count() != 0)
                     return Results.BadRequest($"{validationResults[0]}");
 
