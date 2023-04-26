@@ -2,11 +2,14 @@ using TodoListMinimalAPI.Data;
 using TodoListMinimalAPI.Endpoints;
 using AutoMapper;
 using TodoListMinimalAPI.Mapper;
+using Microsoft.EntityFrameworkCore;
 
 var builder = WebApplication.CreateBuilder(args);
 
 
-builder.Services.AddDbContext<AppDbContext>(); //gerencia toda a conexão com o banco, sempre que tive rum db context usa um addDbContext
+builder.Services.AddDbContext<AppDbContext>(options =>
+    options.UseSqlite(builder.Configuration.GetConnectionString("TaskAPIContext") ?? throw new InvalidOperationException("Connection string 'TaskAPIContext' not found.")));
+
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 

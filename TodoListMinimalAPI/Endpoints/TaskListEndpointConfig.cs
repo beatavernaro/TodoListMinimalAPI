@@ -9,12 +9,6 @@ namespace TodoListMinimalAPI.Endpoints
 {
     public class TaskListEndpointConfig
     {
-        public readonly IMapper _mapper;
-        public TaskListEndpointConfig(IMapper mapper)
-        {
-            _mapper = mapper;
-        }
-
         public static void AddEndpoint(WebApplication app)
         {
             #region GET
@@ -69,13 +63,12 @@ namespace TodoListMinimalAPI.Endpoints
             #endregion
 
             #region POST
-            app.MapPost("/api", (AppDbContext context, TaskPostModel taskPostModel) =>
+            app.MapPost("/api", (AppDbContext context, IMapper _mapper, TaskPostModel taskPostModel) =>
             {
                 //var response = taskPostModel.ConvertToTask();
-                var _mapper = new IMapper();
-                var response = _mapper.Map<TaskModel>(taskPostModel);
+                //var _mapper = new IMapper();
+                var response = _mapper.Map<TaskModel>(taskPostModel); //mapear para <> de ()
 
-                //mapear para <> de ()
                 var validationResults = TaskValidator.Valid(response);
                 if (validationResults.Count() != 0)
                     return Results.BadRequest($"{validationResults[0]}");
