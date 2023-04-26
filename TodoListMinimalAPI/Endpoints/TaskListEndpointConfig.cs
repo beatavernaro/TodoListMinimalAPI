@@ -69,10 +69,10 @@ namespace TodoListMinimalAPI.Endpoints
             #endregion
 
             #region POST
-            app.MapPost("/api", (AppDbContext context, TaskPostModel taskPostModel) =>
+            app.MapPost("/api", (AppDbContext context, IMapper _mapper, TaskPostModel taskPostModel) =>
             {
                 //var response = taskPostModel.ConvertToTask();
-                var _mapper = new IMapper();
+               // var _mapper = new IMapper();
                 var response = _mapper.Map<TaskModel>(taskPostModel);
 
                 //mapear para <> de ()
