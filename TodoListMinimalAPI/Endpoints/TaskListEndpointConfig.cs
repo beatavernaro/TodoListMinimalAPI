@@ -2,118 +2,114 @@
 using FluentValidation;
 using TodoListMinimalAPI.Contracts.Response;
 using TodoListMinimalAPI.Data;
-using TodoListMinimalAPI.Helpers;
 using TodoListMinimalAPI.Validators;
 
-namespace TodoListMinimalAPI.Endpoints
+namespace TodoListMinimalAPI.Endpoints;
+
+public class TaskListEndpointConfig
 {
-    public class TaskListEndpointConfig
+    public static void AddEndpoint(WebApplication app)
     {
-        public static void AddEndpoint(WebApplication app)
+        #region GET
+        app.MapGet("/api/tasks", (AppDbContext context) =>
         {
-            #region GET
-            app.MapGet("/api/tasks", (AppDbContext context) =>
-            {
-                var orderTasks = (from task in context.TodoTasks
-                                  orderby task.DueDate
+            var orderTasks = (from task in context.TodoTasks
+                              orderby task.DueDate
+                              select task).ToList();
+          
+            if (orderTasks.Count == 0) return Results.NotFound("No tasks found");
+
+            return Results.Ok(orderTasks);
+        });
+
+        app.MapGet("/api/tasks/{status}", (bool status, AppDbContext context) =>
+        {
+            var selectByStatus = (from task in context.TodoTasks
+                                  where task.Done == status
                                   select task).ToList();
 
-                if (orderTasks.Count == 0) return Results.NotFound("No tasks found");
+            if (selectByStatus.Count == 0) return Results.NotFound($"No results with the status {status}");
 
-                return Results.Ok(orderTasks);
-            });
+            return Results.Ok(selectByStatus);
+        });
 
-            app.MapGet("/api/tasks/{status}", (bool status, AppDbContext context) =>
-            {
-                var selectByStatus = (from task in context.TodoTasks
-                                      where task.Done == status
-                                      select task).ToList();
+        /*
+        app.MapGet("/api/tasks/{subject}", (string subject, AppDbContext context) =>
+        {
+            var selectBySubject = (from task in context.TodoTasks
+                                  where task.Subject == subject
+                                  select task).ToList();
 
-                if (selectByStatus.Count == 0) return Results.NotFound($"No results with the status {status}");
+            if (selectBySubject.Count == 0) return Results.NotFound($"No results for the {subject} subject");
 
-                return Results.Ok(selectByStatus);
-            });
+            return Results.Ok(selectBySubject);
+        });
+        */
 
-            /*
-            app.MapGet("/api/tasks/{subject}", (string subject, AppDbContext context) =>
-            {
-                var selectBySubject = (from task in context.TodoTasks
-                                      where task.Subject == subject
-                                      select task).ToList();
+        app.MapGet("/api/tasks/overdueTasks", (AppDbContext context) =>
+         {
+             DateOnly today = DateOnly.FromDateTime(DateTime.Now);
 
-                if (selectBySubject.Count == 0) return Results.NotFound($"No results for the {subject} subject");
+             var selectOverdueTasks = (from tasks in context.TodoTasks
+                                       where tasks.DueDate < today && tasks.Done == false
+                                       select tasks).ToList();
 
-                return Results.Ok(selectBySubject);
-            });
-            */
+             if (selectOverdueTasks.Count == 0) return Results.Ok("There is no overdue task for today");
 
-            app.MapGet("/api/tasks/overdueTasks", (AppDbContext context) =>
-             {
-                 DateOnly today = DateOnly.FromDateTime(DateTime.Now);
-                 
-                 var selectOverdueTasks = (from tasks in context.TodoTasks
-                                           where tasks.DueDate < today
-                                           select tasks).ToList();
+             return Results.Ok(selectOverdueTasks);
+         });
 
-                 if (selectOverdueTasks.Count == 0) return Results.Ok("There is no overdue task for today");
+        #endregion
 
-                 return Results.Ok(selectOverdueTasks);
-             });
+        #region POST
+        app.MapPost("/api", (AppDbContext context, IMapper _mapper, TaskPostModel taskPostModel) =>
+        {
 
-            #endregion
+            var response = _mapper.Map<TaskModel>(taskPostModel); //mapear para <> de ()
+            var validationResults = TaskValidator.Valid(response);
+            if (validationResults.Count != 0)
+                return Results.BadRequest($"{validationResults[0]}");
 
-            #region POST
-            app.MapPost("/api", (AppDbContext context, IMapper _mapper, TaskPostModel taskPostModel) =>
-            {
-                //var response = taskPostModel.ConvertToTask();
-                //var _mapper = new IMapper();
-                var response = _mapper.Map<TaskModel>(taskPostModel); //mapear para <> de ()
+            context.TodoTasks.Add(response);
+            context.SaveChanges();
+            return Results.Created($"/{response.Id}", taskPostModel);
+        });
+        #endregion
 
-                var validationResults = TaskValidator.Valid(response);
-                if (validationResults.Count() != 0)
-                    return Results.BadRequest($"{validationResults[0]}");
+        #region PUT
+        app.MapPut("/api/{id}", (AppDbContext context, TaskPutModel taskModel, Guid id) =>
+        {
+            var taskToUpdate = context.TodoTasks.Find(id);
 
-                context.TodoTasks.Add(response);
-                context.SaveChanges();
-                return Results.Created($"/{response.Id}", taskPostModel);
-            });
-            #endregion
+            if (taskToUpdate is null) return Results.NotFound("No matches found with the given ID");
 
-            #region PUT
-            app.MapPut("/api/{id}", (AppDbContext context, TaskPutModel taskModel, Guid id) =>
-            {
-                var taskToUpdate = context.TodoTasks.Find(id);
+            taskToUpdate.Done = taskModel.Done;
+            taskToUpdate.Grade = taskModel.Grade;
 
-                if (taskToUpdate is null) return Results.NotFound("No matches found with the given ID");
+            var validationResults = TaskValidator.Valid(taskToUpdate);
+            if (validationResults.Count != 0)
+                return Results.BadRequest($"{validationResults[0]}");
 
-                taskToUpdate.Done = taskModel.Done;
-                taskToUpdate.Grade = taskModel.Grade;
+            context.SaveChanges();
 
-                var validationResults = TaskValidator.Valid(taskToUpdate);  
-                if (validationResults.Count() != 0)
-                    return Results.BadRequest($"{validationResults[0]}");
+            return Results.Ok(taskToUpdate);
 
-                context.SaveChanges();
+        });
+        #endregion
 
-                return Results.Ok(taskToUpdate);
+        #region DELETE
+        app.MapDelete("/api/{id}", (Guid id, AppDbContext context) =>
+        {
+            var deleteTask = context.TodoTasks.Find(id);
 
-            });
-            #endregion
+            if (deleteTask is null) return Results.NotFound();
 
-            #region DELETE
-            app.MapDelete("/api/{id}", (Guid id, AppDbContext context) =>
-            {
-                var deleteTask = context.TodoTasks.Find(id);
+            var removed = context.TodoTasks.Remove(deleteTask);
+            context.SaveChanges();
 
-                if (deleteTask is null) return Results.NotFound();
-
-                var removed = context.TodoTasks.Remove(deleteTask);
-                context.SaveChanges();
-
-                return Results.Ok("Deleted!");
-            });
-            #endregion
-        }
-
+            return Results.Ok("Deleted!");
+        });
+        #endregion
     }
+
 }

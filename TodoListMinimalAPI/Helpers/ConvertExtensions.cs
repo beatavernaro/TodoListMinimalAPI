@@ -1,23 +1,24 @@
 ﻿using TodoListMinimalAPI.Contracts.Response;
 using TodoListMinimalAPI.Data;
+using TodoListMinimalAPI.Models;
 
-namespace TodoListMinimalAPI.Helpers
+namespace TodoListMinimalAPI.Helpers;
+
+public static class ConvertExtensions
 {
-    public static class ConvertExtensions
+    public static TaskModel ConvertToTask(this TaskPostModel taskModel)
     {
-        public static TaskModel ConvertToTask(this TaskPostModel taskModel)
+        TaskModel response = new()
         {
-            TaskModel response = new TaskModel();
-            response.Title = taskModel.Title;
-            response.Done = taskModel.Done;
-            response.Subject = taskModel.Subject.ToLower();
-            response.Description = taskModel.Description;
-            response.Grade = taskModel.Grade;
-            response.DueDate = taskModel.DueDate;
-            response.Id = Guid.NewGuid();
-            //POSTMAN TESTE
+            Title = taskModel.Title,
+            Done = taskModel.Done,
+            Subject = taskModel.Subject,
+            Description = taskModel.Description,
+            Grade = taskModel.Grade,
+            DueDate = taskModel.DueDate,
+            Id = Guid.NewGuid()
+        };
 
-            return response;
-        }
+        return response;
     }
 }
