@@ -12,8 +12,8 @@ using TodoListMinimalAPI.Data;
 namespace TodoListMinimalAPI.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    [Migration("20230509003823_InitialCreate")]
-    partial class InitialCreate
+    [Migration("20230524213234_InitialCreation")]
+    partial class InitialCreation
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
